@@ -339,13 +339,19 @@ Regional Delivery Leader
 ### Verification Button
 
 ```html
-<a href="@{outputs('Compose_Verification_URL')}"
+<a href="https://apps.powerapps.com/play/e/default-c663f89c-ef9b-418f-bd3d-41e46c0ce068/a/0c819325-4583-4266-936f-4a8856f8ad82?tenantId=c663f89c-ef9b-418f-bd3d-41e46c0ce068&amp;hint=5f2348b8-7f6d-4ef0-a3c2-07f5260d22ed&amp;sourcetime=1781820026457&amp;account=@{items('Apply_to_each')?['Account']}" style="background:#107c10;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;"
 style="
 background:#0078D4;
 color:white;
 padding:12px 20px;
 text-decoration:none;
 border-radius:4px;">
+VERIFY DIRECTORY
+</a>
+
+OR
+
+<a href="https://apps.powerapps.com/play/e/default-c663f89c-ef9b-418f-bd3d-41e46c0ce068/a/0c819325-4583-4266-936f-4a8856f8ad82?tenantId=c663f89c-ef9b-418f-bd3d-41e46c0ce068&amp;hint=5f2348b8-7f6d-4ef0-a3c2-07f5260d22ed&amp;sourcetime=1781820026457&amp;account=@{items('Apply_to_each')?['Account']}" style="background:#107c10;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">
 VERIFY DIRECTORY
 </a>
 ```
