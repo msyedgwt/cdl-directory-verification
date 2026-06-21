@@ -269,29 +269,6 @@ Continue processing.
 
 Compose
 
-### Name
-
-Compose Verification URL
-
-### Expression
-
-```text
-concat(
-'https://yourcompany.com/verify?recordid=',
-items('Apply_to_each')?['RecordID']
-)
-```
-
-### Example Output
-
-```text
-https://yourcompany.com/verify?recordid=ACC0001
-```
-
-### Purpose
-
-Generates a unique verification link tied to the account RecordID.
-
 ---
 
 # Verification Email
