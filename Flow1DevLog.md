@@ -44,7 +44,6 @@ Retrieves all account records from the CDL Directory workbook.
 
 ## Expected Columns
 
-* RecordID
 * Account Name
 * CDL
 * CDL Email
