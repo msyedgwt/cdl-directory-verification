@@ -1,6 +1,6 @@
 # CDL Directory Verification Automation
 
-# Development Log – Flow 1: Monthly Verification Distribution
+# Development Log – Flow 1: Verification Distribution
 
 ## Purpose
 
