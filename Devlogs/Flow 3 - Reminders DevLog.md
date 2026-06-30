@@ -197,10 +197,7 @@ if(and(greaterOrEquals(outputs('daysSince'),7),
 
 ## Open Items / Next Steps
 
-- [ ] Enable failure notifications on this flow.
-- [ ] Add fallback handling for blank `RDL Email` at Escalation time *(send to CDL only and flag the row, vs. skip, vs. default admin CC)*.
 - [ ] Add a Day 28 admin notification for rows still stuck at `Escalated` one week after escalation fired.
-- [ ] Configure **run after** on Update a row so `ReminderCount` doesn't increment if the email action failed.
 
 ---
 
