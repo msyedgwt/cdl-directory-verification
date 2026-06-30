@@ -1,544 +1,172 @@
-# CDL Directory Verification Automation
+================================================================================
+FLOW 1 — MONTHLY VERIFICATION DISTRIBUTION | DEVELOPMENT LOG
+================================================================================
 
-# Development Log – Flow 1: Verification Distribution
+# Flow Overview
 
-## Purpose
+- Flow Name:    CDL Monthly Verification Distribution
+- Platform:     Power Automate (Cloud Flow)
+- Trigger:      Recurrence (monthly right now, future quarterly)
+- Owner:        Mohtashim Syed
+- Last Updated: 2026-06-30
 
-Flow 1 is responsible for distributing monthly verification emails to all Client Delivery Leads (CDLs) listed in the CDL Directory. The flow retrieves account records from Excel, validates required fields, sends a customized verification email containing the current directory information for each account, updates verification tracking fields, and generates an audit log for reporting purposes.
+--------------------------------------------------------------------------------
 
----
+# Purpose
 
-# Flow Information
+Distributes the monthly CDL Directory verification emails to every Client
+Delivery Lead in the directory. Each email contains that account's current
+directory snapshot and a link to the Power App verification form. Also resets
+all per-cycle tracking fields so each month starts clean.
 
-**Flow Name**
+This is the first flow in a three-flow system:
+- Flow 1 (this flow): Distributes monthly verification emails.
+- Flow 2: Records the response when the CDL submits the Power App form.
+- Flow 3: Handles reminders (Day 7, Day 14) and escalation (Day 21).
 
-CDL Monthly Verification Distribution
+--------------------------------------------------------------------------------
 
-**Flow Type**
+# Trigger
 
-Scheduled Cloud Flow
+- Type:       Recurrence
+- Frequency:  Month
+- Interval:   1
+- Day/Time:   1st of each month, 08:00 Central Time
 
-**Frequency**
+--------------------------------------------------------------------------------
 
-Monthly
+# Data Source (Test File)
 
-**Interval**
+- Connector:  Excel Online (Business)
+- File:       CDL Directory - 5.19.2026.xlsx
+- Location:   OneDrive for Business
+- Table:      Table1 (formatted as Excel Table)
+- Sheet:      [Sheet1]
 
-1
+Key column for updates: Account
 
----
-
-# Data Source
-
-## Connector
-
-Excel Online (Business)
-
-## Action
-
-List rows present in a table
-
-## Purpose
-
-Retrieves all account records from the CDL Directory workbook.
-
-## Expected Columns
-
-* Account Name
-* CDL
-* CDL Email
-* Region
-* Regional Delivery Leader
-* Account Architect
-* AGM
-* Contract Manager
-* CX Leader
-* Information Security Lead
-* Infrastructure Delivery Lead
-* Legal Contact
-* PMO Lead
-* Primary Solution Implemented
-* Procurement Contact
-* Quality Manager
-* Change Manager
-* Release Manager
-* Sector Leader
-* Systems Manager
-* Test Manager
-* Last Verified
-* VerificationStatus
-* VerificationSentDate
-* ReminderCount
-
----
+--------------------------------------------------------------------------------
 
 # Variable Initialization
 
-The following variables are initialized before entering the processing loop.
+- TotalAccounts  (Integer, 0)  — total rows processed
+- MissingEmails  (Integer, 0)  — rows skipped due to blank CDL Email
+- AuditLog       (Array,  [])  — per-row results for CSV report
 
-## AuditLog
-
-### Action
-
-Initialize Variable
-
-### Configuration
-
-```json
-{
-  "Name": "AuditLog",
-  "Type": "Array",
-  "Value": []
-}
-```
-
-### Purpose
-
-Stores processing results for audit reporting.
-
-Examples:
-
-```json
-{
-  "Account":"AK",
-  "Status":"Email Sent"
-}
-```
-
-```json
-{
-  "Account":"OH",
-  "Status":"Missing CDL Email"
-}
-```
-
----
-
-## MissingEmails
-
-### Action
-
-Initialize Variable
-
-### Configuration
-
-```json
-{
-  "Name": "MissingEmails",
-  "Type": "Integer",
-  "Value": 0
-}
-```
-
-### Purpose
-
-Tracks accounts missing required email information.
-
----
-
-## TotalAccounts
-
-### Action
-
-Initialize Variable
-
-### Configuration
-
-```json
-{
-  "Name": "TotalAccounts",
-  "Type": "Integer",
-  "Value": 0
-}
-```
-
-### Purpose
-
-Tracks the total number of account records processed.
-
----
-
-# Apply to Each Loop
-
-### Source
-
-value
-
-(from List rows present in a table)
-
-### Purpose
-
-Processes each account individually.
-
-Flow structure:
-
-```text
-For Each Account
-    Validate Required Fields
-    Generate Verification URL
-    Send Email
-    Update Tracking Fields
-    Write Audit Log
-```
-
----
-
-# Account Counter
-
-### Action
-
-Increment Variable
-
-### Variable
-
-TotalAccounts
-
-### Value
-
-1
-
-### Purpose
-
-Tracks total records processed during the run.
-
----
-
-# Required Field Validation
-
-### Action
-
-Condition
-
-### Expression
-
-```text
-or(
- empty(items('Apply_to_each')?['Account Name']),
- empty(items('Apply_to_each')?['CDL Email'])
-)
-```
-
-### Purpose
-
-Prevents sending verification requests for incomplete records.
-
----
-
-## YES Branch
-
-Condition met:
-
-```text
-Account Name missing
-OR
-CDL Email missing
-```
-
-### Increment Missing Email Counter
-
-```text
-MissingEmails + 1
-```
-
-### Append Audit Log Entry
-
-```json
-{
-  "Account":"@{items('Apply_to_each')?['Account Name']}",
-  "Status":"Missing CDL Email"
-}
-```
-
-### Result
-
-Account is skipped and no email is sent.
-
----
-
-## NO Branch
-
-Required information exists.
-
-Continue processing.
-
----
-
-# Verification URL Generation
-
-### Action
-
-Compose
-
----
-
-# Verification Email
-
-### Action
-
-Send an Email (V2)
-
-## Recipient
-
-CDL Email
-
-## Subject
-
-```text
-Monthly CDL Directory Verification Required – @{items('Apply_to_each')?['Account Name']}
-```
-
-## Email Body Structure
-
-### Greeting
-
-```html
-Hello @{items('Apply_to_each')?['CDL']},
-```
-
-### Directory Snapshot Table
-
-The email displays the current directory information in HTML table format.
-
-Example row:
-
-```html
-<tr>
-<td style="background:#f2f2f2;font-weight:bold;padding:8px;border:1px solid #ddd;">
-Regional Delivery Leader
-</td>
-<td style="padding:8px;border:1px solid #ddd;">
-@{items('Apply_to_each')?['Regional Delivery Leader']}
-</td>
-</tr>
-```
-
-### Included Directory Fields
-
-* Account
-* CDL
-* Region
-* Regional Delivery Leader
-* Account Architect
-* AGM
-* Contract Manager
-* CX Leader
-* Information Security Lead
-* Infrastructure Delivery Lead
-* Legal Contact
-* PMO Lead
-* Primary Solution Implemented
-* Procurement Contact
-* Quality Manager
-* Change Manager
-* Release Manager
-* Sector Leader
-* Systems Manager
-* Test Manager
-* Last Verified
-
-### Verification Button
-
-```html
-<a href="https://apps.powerapps.com/play/e/default-c663f89c-ef9b-418f-bd3d-41e46c0ce068/a/0c819325-4583-4266-936f-4a8856f8ad82?tenantId=c663f89c-ef9b-418f-bd3d-41e46c0ce068&amp;hint=5f2348b8-7f6d-4ef0-a3c2-07f5260d22ed&amp;sourcetime=1781820026457&amp;account=@{items('Apply_to_each')?['Account']}" style="background:#107c10;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;"
-style="
-background:#0078D4;
-color:white;
-padding:12px 20px;
-text-decoration:none;
-border-radius:4px;">
-VERIFY DIRECTORY
-</a>
-
-OR
-
-<a href="https://apps.powerapps.com/play/e/default-c663f89c-ef9b-418f-bd3d-41e46c0ce068/a/0c819325-4583-4266-936f-4a8856f8ad82?tenantId=c663f89c-ef9b-418f-bd3d-41e46c0ce068&amp;hint=5f2348b8-7f6d-4ef0-a3c2-07f5260d22ed&amp;sourcetime=1781820026457&amp;account=@{items('Apply_to_each')?['Account']}" style="background:#107c10;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">
-VERIFY DIRECTORY
-</a>
-```
-
-### Closing Message
-
-```html
-If updates are needed, please update the directory first.
-
-Thank you,
-Directory Verification Automation
-```
-
----
-
-# Update Verification Tracking
-
-Immediately after successful email delivery.
-
-### Action
-
-Update a Row
-
-## Key Column
-
-RecordID
-
-## Key Value
-
-```text
-@{items('Apply_to_each')?['RecordID']}
-```
-
-## Updated Fields
-
-### VerificationStatus
-
-```text
-Pending
-```
-
-### VerificationSentDate
-
-```text
-utcNow()
-```
-
-### ReminderCount
-
-```text
-0
-```
-
-### Purpose
-
-Marks the record as awaiting verification.
-
----
-
-# Audit Logging
-
-After email transmission:
-
-### Append to AuditLog
-
-```json
-{
-  "Account":"@{items('Apply_to_each')?['Account Name']}",
-  "Status":"Email Sent"
-}
-```
-
-### Purpose
-
-Captures successful email deliveries.
-
----
-
-# Post-Processing
-
-After the Apply to Each loop completes:
-
-### Create CSV Table
-
-#### Input
-
-```text
-variables('AuditLog')
-```
-
-#### Format
-
-```text
-CSV
-```
-
-### Purpose
-
-Converts audit records into downloadable report format.
-
----
-
-# Create Audit File
-
-### Action
-
-Create File
-
-### Location
-
-OneDrive for Business
-
-### Folder
-
-```text
-/Desktop/CDLVerification
-```
-
-### File Name
-
-```text
-CDL_Verification_Audit_@{formatDateTime(utcNow(),'yyyy-MM-dd-HHmmss')}.csv
-```
-
-### File Content
-
-```text
-Output from Create CSV Table
-```
-
-### Purpose
-
-Stores a timestamped audit record for each monthly distribution run.
-
----
-
-# Final Output
-
-At completion, Flow 1 accomplishes the following:
-
-## Verification Distribution
-
-* Sends one verification email per account
-
-## Tracking
-
-* Sets VerificationStatus = Pending
-* Sets VerificationSentDate = Current Date/Time
-* Resets ReminderCount = 0
-
-## Audit Reporting
-
-* Tracks successful sends
-* Tracks missing emails
-* Creates CSV audit report
-
-## Metrics Captured
-
-* Total Accounts Processed
-* Missing Email Count
-* Email Distribution Results
-* Verification Status Updates
-
----
-
-# Flow Summary
-
-```text
-Scheduled Monthly Trigger
-        ↓
-List Rows from Excel
-        ↓
-Initialize Variables
-        ↓
-Apply to Each Account
-        ↓
-Validate Required Fields
-        ↓
-Generate Verification URL
-        ↓
-Send Verification Email
-        ↓
-Update Verification Tracking Fields
-        ↓
-Append Audit Log
-        ↓
-Create CSV Audit Report
-        ↓
-Save Audit File to OneDrive
-```
+--------------------------------------------------------------------------------
+
+# Flow Logic
+
+For each row in the CDL Directory:
+  1. Increment TotalAccounts.
+  2. Validate: skip if Account Name OR CDL Email is blank
+       -> log to MissingEmails counter and AuditLog.
+  3. Run Office Script ClearReminderColumns to clear:
+       Reminder1Sent, Reminder2Sent, EscalationSent, Verification Timestamp.
+  4. Update row to reset cycle state:
+       Verification Status   -> Pending
+       Verification SentDate -> utcNow()
+       ReminderCount         -> 0
+  5. Send verification email (HTML body with full directory snapshot
+     and VERIFY DIRECTORY button linking to the Power App).
+  6. Append AuditLog entry: { Account, Status: "Email Sent" }.
+
+After the loop:
+  7. Create CSV table from AuditLog.
+  8. Save CSV to /Desktop/CDLVerification/ in OneDrive with timestamp.
+
+--------------------------------------------------------------------------------
+
+# Key Actions
+
+1. PowerApps (V2) Trigger / Recurrence
+2. Initialize Variables (TotalAccounts, MissingEmails, AuditLog)
+3. List rows present in a table  — DateTime Format: ISO 8601
+4. Apply to each (over body/value)
+   4a. Increment TotalAccounts
+   4b. Condition — Account Name blank OR CDL Email blank?
+        - True  -> Increment MissingEmails, append AuditLog "Missing CDL Email"
+        - False -> proceed
+   4c. Run script: ClearReminderColumns (accountName = Account)
+   4d. Update a row (Verification Status, Verification SentDate, ReminderCount)
+   4e. Send an email (V2) with directory snapshot HTML
+   4f. Append to AuditLog: { Account, Status: "Email Sent" }
+5. Create CSV table (from AuditLog)
+6. Create File (OneDrive: CDL_Verification_Audit_[timestamp].csv)
+
+--------------------------------------------------------------------------------
+
+# Office Script Dependency
+
+- Script Name: ClearReminderColumns
+- Location:    OneDrive for Business » Documents » Office Scripts
+- Purpose:     Clears Reminder1Sent, Reminder2Sent, EscalationSent, and
+               Verification Timestamp cells to TRUE blank (avoids the Excel
+               Online connector's null -> "False" bug).
+- Parameters:  accountName (string) — passed from current Apply to each row.
+
+--------------------------------------------------------------------------------
+
+# Email Template Highlights
+
+- Subject:  Monthly CDL Directory Verification Required - [Account Name]
+- Body:     Full directory snapshot in HTML table (20 fields), VERIFY
+            DIRECTORY button linking to Power App with ?account=[Account]
+            in the URL so the form opens to the right row.
+- Sign-off: "Selecting VERIFY DIRECTORY will open the verification form
+            where you can review the directory, make any updates, and
+            submit your confirmation."
+
+--------------------------------------------------------------------------------
+
+# Design Notes
+
+- The connector returns numeric columns as strings ("0", "1", etc.). Flow 3
+  uses int() to convert before comparing. Flow 1 writes numeric literals
+  directly to ReminderCount (which the connector accepts).
+
+- Office Script is required for true cell-blanking. Direct null/empty
+  writes via the connector produce the literal string "False" in Excel.
+
+- The Apply to each loop is intentionally not parallelized — Excel Online
+  serialization of row updates is required to avoid race conditions.
+
+--------------------------------------------------------------------------------
+
+# Known Issues / Lessons Learned
+
+- 2026-06-29: Connector wrote "False" into reminder columns when given
+  null/empty values. Resolved by introducing the ClearReminderColumns
+  Office Script and routing all blanking through it.
+
+- 2026-06-30: Trailing-space column headers (AGM_, Legal Contact_) caused
+  dynamic content tokens to silently break. Resolved by renaming headers
+  and refreshing dynamic content.
+
+- 2026-06-30: Reminder1Sent / Reminder2Sent / EscalationSent /
+  Verification Timestamp columns historically held the literal string
+  "False" from prior Update a row failures. One-time bulk clear performed.
+
+--------------------------------------------------------------------------------
+
+# Dependencies
+
+- Power App:   CDL Directory Verification App
+- Flow 2:      Verification Handler (writes Verification Status = Verified)
+- Flow 3:      Reminder & Escalation Handler (reads Verification SentDate
+               and ReminderCount set by this flow)
+- Excel File:  CDL Directory - 5.19.2026.xlsx
+- Script:      ClearReminderColumns (OneDrive Office Scripts)
+
+--------------------------------------------------------------------------------
+
+# Open Items / Next Steps
+
+- [ ] Enable failure notifications on this flow.
+- [ ] Add Power BI dashboard sourced from this Excel file.
+- [ ] Consider migrating data source from Excel to Dataverse to eliminate
+      the null-handling and string-typed-numerics issues.
+
+================================================================================
+END OF LOG
+================================================================================
