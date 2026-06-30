@@ -1,1 +1,23 @@
-test
+function main(workbook: ExcelScript.Workbook, accountName: string) {
+    const sheet = workbook.getWorksheet("Sheet1"); // change if your sheet is named differently
+    const table = sheet.getTables()[0];            // first table on the sheet
+    const rows = table.getRangeBetweenHeaderAndTotal().getValues();
+    const headers = table.getHeaderRowRange().getValues()[0] as string[];
+
+    const accountCol = headers.indexOf("Account");
+    const r1Col = headers.indexOf("Reminder1Sent");
+    const r2Col = headers.indexOf("Reminder2Sent");
+    const escCol = headers.indexOf("EscalationSent");
+    const vtsCol = headers.indexOf("Verification Timestamp");
+
+    for (let i = 0; i < rows.length; i++) {
+        if (rows[i][accountCol] === accountName) {
+            const rowRange = table.getRangeBetweenHeaderAndTotal().getRow(i);
+            rowRange.getCell(0, r1Col).clear(ExcelScript.ClearApplyTo.contents);
+            rowRange.getCell(0, r2Col).clear(ExcelScript.ClearApplyTo.contents);
+            rowRange.getCell(0, escCol).clear(ExcelScript.ClearApplyTo.contents);
+            rowRange.getCell(0, vtsCol).clear(ExcelScript.ClearApplyTo.contents);
+            return;
+        }
+    }
+}
