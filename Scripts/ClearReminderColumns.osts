@@ -1,3 +1,4 @@
+//from Excel Office Scripts to clean up the Reminder Columns
 function main(workbook: ExcelScript.Workbook, accountName: string) {
     const sheet = workbook.getWorksheet("Sheet1"); // change if your sheet is named differently
     const table = sheet.getTables()[0];            // first table on the sheet
