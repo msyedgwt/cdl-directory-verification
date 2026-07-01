@@ -101,8 +101,8 @@ When the Power App calls this flow:
 ## Known Issues / Lessons Learned
 
 ### 2026-06-29 — `[Expression.Error] The column 'Verification Timestamp' of the table wasn't found.`
-**Cause:** Column existed in the sheet but was not inside the Excel Table boundary.
-**Resolution:** Excel → **Table Design** → **Resize Table** to include the new columns, then refresh dynamic content in Update a row.
+**Cause:** Column existed in the sheet but was changed in the Excel Table.
+**Resolution:** Excel → **Queries and Connections** → **Redo Query** to include the updated columns, then refresh dynamic content in Update a row.
 
 ### 2026-06-29 — Flow did not appear in Power Apps
 **Cause:** Existing in Power Automate alone is not sufficient — the flow must be explicitly attached to the app.
@@ -128,10 +128,8 @@ When the Power App calls this flow:
 
 ## Open Items / Next Steps
 
-- [ ] Add a failure branch (**Configure run after**) that logs to an Errors table if Update a row fails.
 - [ ] Persist `ChangesJSON` to a dedicated audit table for change history.
 - [ ] Add Teams notification to the Regional Delivery Leader when a verification is recorded.
-- [ ] Enable failure notifications on this flow.
 
 ---
 
