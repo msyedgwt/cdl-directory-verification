@@ -6,7 +6,7 @@
 |---|---|
 | **Flow Name** | CDL Monthly Verification Distribution |
 | **Platform** | Power Automate (Cloud Flow) |
-| **Trigger** | Recurrence (monthly today, quarterly in future state) |
+| **Trigger** | Recurrence (quarterly) |
 | **Owner** | Mohtashim Syed |
 | **Last Updated** | 2026-06-30 |
 
@@ -14,11 +14,11 @@
 
 ## Purpose
 
-Distributes the monthly CDL Directory verification emails to every Client Delivery Lead in the directory. Each email contains that account's current directory snapshot and a link to the Power App verification form. Also resets all per-cycle tracking fields so each month starts clean.
+Distributes the quarterly CDL Directory verification emails to every Client Delivery Lead in the directory. Each email contains that account's current directory snapshot and a link to the Power App verification form. Also resets all per-cycle tracking fields so each month starts clean.
 
 This is the first flow in a three-flow system:
 
-- **Flow 1 (this flow):** Distributes monthly verification emails.
+- **Flow 1 (this flow):** Distributes quarterly verification emails.
 - **Flow 2:** Records the response when the CDL submits the Power App form.
 - **Flow 3:** Handles reminders (Day 7, Day 14) and escalation (Day 21).
 
@@ -30,8 +30,8 @@ This is the first flow in a three-flow system:
 |---|---|
 | **Type** | Recurrence |
 | **Frequency** | Month |
-| **Interval** | 1 |
-| **Day/Time** | 1st of each month, 08:00 Central Time |
+| **Interval** | 3 |
+| **Day/Time** | 1st of month, 08:00 Central Time |
 
 ---
 
@@ -116,8 +116,8 @@ This is the first flow in a three-flow system:
 
 ## Email Template Highlights
 
-- **Subject:** `Monthly CDL Directory Verification Required - [Account Name]`
-- **Body:** Full directory snapshot in HTML table (20 fields), VERIFY DIRECTORY button linking to the Power App with `?account=[Account]` in the URL so the form opens to the right row.
+- **Subject:** `CDL Directory Verification Required - [Account Name]`
+- **Body:** Full directory snapshot in HTML table, VERIFY DIRECTORY button linking to the Power App with `?account=[Account]` in the URL so the form opens to the right row.
 - **Sign-off:** *"Selecting VERIFY DIRECTORY will open the verification form where you can review the directory, make any updates, and submit your confirmation."*
 
 ---
@@ -162,10 +162,8 @@ This is the first flow in a three-flow system:
 
 ## Open Items / Next Steps
 
-- [ ] Enable failure notifications on this flow.
 - [ ] Add Power BI dashboard sourced from this Excel file.
 - [ ] Consider migrating data source from Excel to **Dataverse** to eliminate the null-handling and string-typed-numerics issues.
-- [ ] Confirm move from monthly → quarterly cadence and update the Recurrence trigger accordingly.
 
 ---
 
