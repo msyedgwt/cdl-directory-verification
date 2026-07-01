@@ -7,9 +7,8 @@
 | **Flow Name** | Flow 3 - Reminder & Escalation Handler |
 | **Platform** | Power Automate (Cloud Flow) |
 | **Trigger** | Recurrence *(daily, 08:00 Central Time)* |
-| **Environment** | *[Insert environment name]* |
 | **Owner** | Mohtashim Syed |
-| **Last Updated** | 2026-06-30 |
+| **Last Updated** | 2026-07-01 |
 
 ---
 
